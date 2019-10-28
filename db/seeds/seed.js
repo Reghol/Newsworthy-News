@@ -29,17 +29,10 @@ exports.seed = function(knex) {
         .returning('*');
     })
     .then(articles => {
-      console.log(articles);
-      // const articleRef = makeRefObj(articleRows);
-      /* 
-
-      Your comment data is currently in the incorrect format and will violate your SQL schema. 
-
-      Keys need renaming, values need changing, and most annoyingly, your comments currently only refer to the title of the article they belong to, not the id. 
-      
-      You will need to write and test the provided makeRefObj and formatComments utility functions to be able insert your comment data.
-      */
+      const articleRef = makeRefObj(articles, 'title', 'article_id');
       const formattedComments = formatComments(commentData, articleRef);
-      return knex('comments').insert(formattedComments);
+      return knex('comments')
+        .insert(formattedComments)
+        .returning('*');
     });
 };
