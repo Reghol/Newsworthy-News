@@ -42,6 +42,18 @@ describe('APP TESTING - ENDPOINTS AND ERRORS', () => {
           expect(body.topics[0]).to.contain.keys('slug', 'description');
         });
     });
-    it('/api/', () => {});
+    it('/api/users/:user GET200 / return a single user with all its keys to the client', () => {
+      return request(app)
+        .get('/api/users/butter_bridge')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.user[0]).to.eql({
+            username: 'butter_bridge',
+            name: 'jonny',
+            avatar_url:
+              'https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg'
+          });
+        });
+    });
   });
 });
