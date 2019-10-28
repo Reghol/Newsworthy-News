@@ -42,32 +42,6 @@ describe('APP TESTING - ENDPOINTS AND ERRORS', () => {
           expect(body.topics[0]).to.contain.keys('slug', 'description');
         });
     });
+    it('/api/', () => {});
   });
 });
-
-// describe('/', () => {
-//   beforeEach(() => knex.seed.run());
-//   after(() => knex.destroy());
-//   it('ALL /invalid_paths - responds 404 with an object with key err containing an error message for invalid paths', () => {
-//
-//     const req3 = request(app)
-//       .delete('/api/articles/3/sdfhjkgsdfk')
-//       .expect(404)
-//       .then(({ body }) => {
-//         expect(body).to.have.key('err');
-//         expect(body.err).to.equal('File or path not found');
-//       });
-//     return Promise.all([req1, req2, req3]);
-//   });
-//   it('ALL /validpath with invalid method - responds 405 when trying to use invalid methods on valid paths', () => {
-//     const req1 = request(app)
-//       .put('/api/topics')
-//       .expect(405);
-//     const req2 = request(app)
-//       .patch('/api/users/rogersob')
-//       .expect(405);
-//     const req3 = request(app)
-//       .delete('/api')
-//       .expect(405);
-//     return Promise.all([req1, req2, req3]);
-//   });
