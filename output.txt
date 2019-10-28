@@ -1,0 +1,8 @@
+
+> be-nc-news@1.0.0 setup-dbs /home/sonofhonor/backend2/be-nc-news
+> psql -f ./db/setup.sql
+
+DROP DATABASE
+DROP DATABASE
+CREATE DATABASE
+CREATE DATABASE
