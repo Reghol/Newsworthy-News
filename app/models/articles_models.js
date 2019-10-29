@@ -2,12 +2,19 @@ const connection = require('../../connection');
 
 exports.selectArticleById = article => {
   return connection
-    .select('author', 'title', 'topic', 'body', 'created_at', 'votes')
+    .select('articles.*')
     .from('articles')
     .where({ 'articles.article_id': article })
+    .leftJoin('comments', 'articles.article_id', 'comments.article_id')
+    .groupBy('articles.article_id')
+    .count({ comment_count: 'comment_id' })
     .then(selectedArticle => {
+      // console.log(selectedArticle);
       if (!selectedArticle.length)
-        return Promise.reject({ status: 404, msg: `No such resource exists` });
+        return Promise.reject({
+          status: 404,
+          msg: `article_id: ${article} is not in the database`
+        });
       return selectedArticle;
     });
 };
@@ -37,4 +44,8 @@ exports.insertCommentIntoArticle = (article_id, body) => {
     .then(insertedComment => {
       return insertedComment;
     });
+};
+
+exports.selectCommentsByArticle = () => {
+  console.log('hi');
 };

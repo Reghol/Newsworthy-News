@@ -81,7 +81,9 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
         .get('/api/articles/157232')
         .expect(404)
         .then(({ body }) => {
-          expect(body.msg).to.equal('No such resource exists');
+          expect(body.msg).to.equal(
+            'article_id: 157232 is not in the database'
+          );
         });
     });
     it('/articles/: article_id returns an article specifed by the client with all the relevant keys', () => {
@@ -106,12 +108,11 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
         .send({ inc_votes: 7 })
         .expect(201)
         .then(({ body }) => {
-          console.log(body, 'i am in the body');
           expect(body.article[0].votes).to.equal(107);
         });
     });
   });
-  describe.only('/api/articles/:article_id/comments', () => {
+  xdescribe('/api/articles/:article_id/comments', () => {
     it('/articles/:article_id/comments POST adds a comment property to the relevant article_id', () => {
       return request(app)
         .post('/api/articles/1/comments')
@@ -119,6 +120,21 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
         .expect(201)
         .then(({ body }) => {
           expect(body.comment[0]).to.have.keys(
+            'comment_id',
+            'author',
+            'article_id',
+            'votes',
+            'created_at',
+            'body'
+          );
+        });
+    });
+    it('/api/articles/:article_id/comments GET responds with an array of comments for the given article_id of which each comment has the following properties', () => {
+      return request(app)
+        .get('/api/articles/1/comments')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comments[0]).to.have.keys(
             'comment_id',
             'author',
             'article_id',
