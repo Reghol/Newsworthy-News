@@ -46,6 +46,17 @@ exports.insertCommentIntoArticle = (article_id, body) => {
     });
 };
 
-exports.selectCommentsByArticle = () => {
-  console.log('hi');
+exports.selectCommentsByArticle = (
+  article_id,
+  sortBy = 'created_at',
+  order = 'desc'
+) => {
+  return connection
+    .select('*')
+    .from('comments')
+    .where({ article_id: article_id })
+    .orderBy(sortBy, order)
+    .then(comments => {
+      return comments;
+    });
 };

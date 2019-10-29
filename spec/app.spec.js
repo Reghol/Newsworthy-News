@@ -112,7 +112,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
         });
     });
   });
-  xdescribe('/api/articles/:article_id/comments', () => {
+  describe('/api/articles/:article_id/comments', () => {
     it('/articles/:article_id/comments POST adds a comment property to the relevant article_id', () => {
       return request(app)
         .post('/api/articles/1/comments')
@@ -142,6 +142,22 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
             'created_at',
             'body'
           );
+        });
+    });
+    it('/api/articles/:article_id/comments GET responds with an array of comments with default sort order (created_at, descending)', () => {
+      return request(app)
+        .get('/api/articles/1/comments')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comments).to.be.descendingBy('created_at');
+        });
+    });
+    it('/api/articles/:article_id/comments GET responds with an array of comments with default sort order (created_at, descending)', () => {
+      return request(app)
+        .get('/api/articles/1/comments')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comments).to.be.descendingBy('created_at');
         });
     });
   });
