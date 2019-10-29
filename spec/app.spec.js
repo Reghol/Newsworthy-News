@@ -84,7 +84,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           expect(body.msg).to.equal('No such resource exists');
         });
     });
-    it('/articles/: article_id returns an aritcle specifed by the client with all the relevant keys', () => {
+    it('/articles/: article_id returns an article specifed by the client with all the relevant keys', () => {
       return request(app)
         .get('/api/articles/1')
         .expect(200)
@@ -97,6 +97,34 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
             'body',
             'created_at',
             'votes'
+          );
+        });
+    });
+    it('/articles/:article_id PATCH adds an "inc_votes:newVote" property to relevant article id', () => {
+      return request(app)
+        .patch('/api/articles/1')
+        .send({ inc_votes: 7 })
+        .expect(201)
+        .then(({ body }) => {
+          console.log(body, 'i am in the body');
+          expect(body.article[0].votes).to.equal(107);
+        });
+    });
+  });
+  describe.only('/api/articles/:article_id/comments', () => {
+    it('/articles/:article_id/comments POST adds a comment property to the relevant article_id', () => {
+      return request(app)
+        .post('/api/articles/1/comments')
+        .send({ username: 'butter_bridge', body: 'butterlicious' })
+        .expect(201)
+        .then(({ body }) => {
+          expect(body.comment[0]).to.have.keys(
+            'comment_id',
+            'author',
+            'article_id',
+            'votes',
+            'created_at',
+            'body'
           );
         });
     });

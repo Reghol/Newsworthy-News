@@ -11,3 +11,30 @@ exports.selectArticleById = article => {
       return selectedArticle;
     });
 };
+
+exports.updateArticleById = (article_id, body) => {
+  return connection
+    .select('*')
+    .from('articles')
+    .where({ 'articles.article_id': article_id })
+    .increment('votes', body.inc_votes)
+    .returning('*')
+    .then(changedVoteCount => {
+      return changedVoteCount;
+    });
+};
+
+exports.insertCommentIntoArticle = (article_id, body) => {
+  let insertComment = {
+    article_id: article_id,
+    body: body.body,
+    author: body.username
+  };
+  return connection
+    .insert(insertComment)
+    .into('comments')
+    .returning('*')
+    .then(insertedComment => {
+      return insertedComment;
+    });
+};
