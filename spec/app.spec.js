@@ -8,7 +8,7 @@ const knex = require('../connection');
 const testData = require('../db/data');
 chai.use(require('sams-chai-sorted'));
 
-describe('APP TESTING - ENDPOINTS AND ERRORS', () => {
+describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
   beforeEach(() => {
     return knex.seed.run();
   });
@@ -32,7 +32,7 @@ describe('APP TESTING - ENDPOINTS AND ERRORS', () => {
       });
     return Promise.all([invalidPathOne, invalidPathTwo]);
   });
-  describe('/', () => {
+  describe('/api/topics', () => {
     it('/api/topics GET 200/ returns the list of topics object with all the relevant keys', () => {
       return request(app)
         .get('/api/topics')
@@ -40,6 +40,17 @@ describe('APP TESTING - ENDPOINTS AND ERRORS', () => {
         .then(({ body }) => {
           expect(body.topics.length).to.equal(3);
           expect(body.topics[0]).to.contain.keys('slug', 'description');
+        });
+    });
+    it('/api/topics GET 400 error', () => {});
+  });
+  describe('/api/users', () => {
+    it('/api/users/:user GET404 / returns "username not found" when passed a username which does not exist', () => {
+      return request(app)
+        .get('/api/users/megatron')
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('username not found');
         });
     });
     it('/api/users/:user GET200 / return a single user with all its keys to the client', () => {
@@ -53,6 +64,40 @@ describe('APP TESTING - ENDPOINTS AND ERRORS', () => {
             avatar_url:
               'https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg'
           });
+        });
+    });
+  });
+  describe('/api/articles', () => {
+    it(`returns 400: "bad request" when the client uses incorrect syntax`, () => {
+      return request(app)
+        .get('/api/articles/harrythehatche-t')
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('22P02 database error');
+        });
+    });
+    it('returns 404 when trying to fetch an article that does not exist', () => {
+      return request(app)
+        .get('/api/articles/157232')
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('No such resource exists');
+        });
+    });
+    it('/articles/: article_id returns an aritcle specifed by the client with all the relevant keys', () => {
+      return request(app)
+        .get('/api/articles/1')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.article.length).to.equal(1);
+          expect(body.article[0]).to.contain.keys(
+            'title',
+            'topic',
+            'author',
+            'body',
+            'created_at',
+            'votes'
+          );
         });
     });
   });
