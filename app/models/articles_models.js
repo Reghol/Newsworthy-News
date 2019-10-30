@@ -9,7 +9,6 @@ exports.selectArticleById = article => {
     .groupBy('articles.article_id')
     .count({ comment_count: 'comment_id' })
     .then(selectedArticle => {
-      // console.log(selectedArticle);
       if (!selectedArticle.length)
         return Promise.reject({
           status: 404,
@@ -86,7 +85,12 @@ exports.selectCommentsByArticle = (
 exports.selectAllArticles = query => {
   const sort = query.sortBy || 'created_at';
   const order = query.order || 'desc';
-
+  if (order != 'desc' && order != 'asc') {
+    return Promise.reject({
+      msg: "Order must must be either 'asc' or 'desc'.",
+      status: 400
+    });
+  }
   return connection
     .select('articles.*')
     .from('articles')

@@ -92,7 +92,6 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           expect(body.topics[0]).to.contain.keys('slug', 'description');
         });
     });
-    it('GET 400 error', () => {});
   });
   describe('/api/users', () => {
     it('GET404 / returns "username not found" when passed a username which does not exist', () => {
@@ -118,12 +117,22 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
     });
   });
   describe('/api/articles', () => {
-    it(`GET 400: "bad request" when the client uses incorrect syntax`, () => {
+    it(`GET 400  / "bad request" when the client uses incorrect syntax`, () => {
       return request(app)
         .get('/api/articles/harrythehatche-t')
         .expect(400)
         .then(({ body }) => {
           expect(body.msg).to.equal('22P02 database error');
+        });
+    });
+    it('GET 400 / when the order is neither ascending or descending', () => {
+      return request(app)
+        .get('/api/articles?order=wrong')
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal(
+            "Order must must be either 'asc' or 'desc'."
+          );
         });
     });
     it('GET 404 / when trying to fetch an article that does not exist', () => {
@@ -179,6 +188,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           expect(body.msg).to.equal('No articles by: benjoBanjo');
         });
     });
+
     it('GET 404 / returns an error if there are no topic in database specified by the client query', () => {
       return request(app)
         .get('/api/articles?topic=donotvaccinateyourkids')
