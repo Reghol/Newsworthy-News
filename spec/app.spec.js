@@ -398,4 +398,19 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
         .expect(204);
     });
   });
+  describe('FETCH JSON', () => {
+    it('GET 200 /  responds with JSON describing all the available endpoints on your API', () => {
+      return request(app)
+        .get('/api/')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body).to.be.an('object');
+          expect(body.json).to.have.keys(
+            'GET /api',
+            'GET /api/articles',
+            'GET /api/topics'
+          );
+        });
+    });
+  });
 });
