@@ -60,3 +60,35 @@ exports.selectCommentsByArticle = (
       return comments;
     });
 };
+
+exports.selectAllArticles = query => {
+  const sort = query.sortBy || 'created_at';
+  const order = query.order || 'desc';
+
+  return connection
+    .select('articles.*')
+    .from('articles')
+    .modify(extraQueries => {
+      if (query.author) extraQueries.where('articles.author', query.author);
+      if (query.topic) extraQueries.where('articles.topic', query.topic);
+    })
+    .orderBy(sort, order)
+    .count({ comment_count: 'comment_id' })
+    .leftJoin('comments', 'articles.article_id', 'comments.article_id')
+    .groupBy('articles.article_id')
+    .then(result => {
+      if (!result.length && query.author) {
+        return Promise.reject({
+          status: 404,
+          msg: `No articles by: ${query.author}`
+        });
+      }
+      if (!result.length && query.topic) {
+        return Promise.reject({
+          status: 404,
+          msg: `No articles for topic: ${query.topic}`
+        });
+      }
+      return result;
+    });
+};

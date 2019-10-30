@@ -86,7 +86,61 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           );
         });
     });
-    it('/articles/: article_id returns an article specifed by the client with all the relevant keys', () => {
+    it('/api/articles GET 200 / returns an array of all the articles available in the database', () => {
+      return request(app)
+        .get('/api/articles')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles[0]).to.contain.keys(
+            'author',
+            'title',
+            'article_id',
+            'topic',
+            'created_at',
+            'votes',
+            'comment_count'
+          );
+        });
+    });
+    it('/api/articles?order=desc GET 200 / returns an array of all the articles in default order (descending)', () => {
+      return request(app)
+        .get('/api/articles?order=desc')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles).to.be.sortedBy('created_at', {
+            descending: true
+          });
+        });
+    });
+    it('/api/articles?author=butter_bridge GET 200 / responds with all the articles for the user specified by the client', () => {
+      return request(app)
+        .get('/api/articles?author=butter_bridge')
+        .expect(200)
+        .then(({ body }) => {
+          // console.log(body);
+          expect(body.articles[0].author).to.equal('butter_bridge');
+          expect(body.articles[1].author).to.equal('butter_bridge');
+        });
+    });
+    it('/api/articles?author=benjoBanjo GET 404 / returns an error if there are not specified articles by the specific author', () => {
+      return request(app)
+        .get('/api/articles?author=benjoBanjo')
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('No articles by: benjoBanjo');
+        });
+    });
+    it('/api/articles?author=benjoBanjo GET 404 / returns an error if there are no topic in database specified by the client query', () => {
+      return request(app)
+        .get('/api/articles?topic=donotvaccinateyourkids')
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.equal(
+            'No articles for topic: donotvaccinateyourkids'
+          );
+        });
+    });
+    it('/api/articles/:article_id GET 200 / returns an article specifed by the client with all the relevant keys', () => {
       return request(app)
         .get('/api/articles/1')
         .expect(200)
@@ -102,7 +156,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           );
         });
     });
-    it('/articles/:article_id PATCH adds an "inc_votes:newVote" property to relevant article id', () => {
+    it('/api/articles/:article_id PATCH 201 / adds an "inc_votes:newVote" property to relevant article id', () => {
       return request(app)
         .patch('/api/articles/1')
         .send({ inc_votes: 7 })
@@ -113,7 +167,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
     });
   });
   describe('/api/articles/:article_id/comments', () => {
-    it('/articles/:article_id/comments POST adds a comment property to the relevant article_id', () => {
+    it('/articles/:article_id/comments POST 201 / adds a comment property to the relevant article_id', () => {
       return request(app)
         .post('/api/articles/1/comments')
         .send({ username: 'butter_bridge', body: 'butterlicious' })
@@ -129,7 +183,16 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           );
         });
     });
-    it('/api/articles/:article_id/comments GET responds with an array of comments for the given article_id of which each comment has the following properties', () => {
+    it('/api/articles/:article_id/comments POST 400 when the client sends an empty object as a comment', () => {
+      return request(app)
+        .post('/api/articles/1/comments')
+        .send({})
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('23502 database error');
+        });
+    });
+    it('/api/articles/:article_id/comments GET 200 / responds with an array of comments for the given article_id of which each comment has the following properties', () => {
       return request(app)
         .get('/api/articles/1/comments')
         .expect(200)
@@ -144,7 +207,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           );
         });
     });
-    it('/api/articles/:article_id/comments GET responds with an array of comments with default sort order (created_at, descending)', () => {
+    it('/api/articles/:article_id/comments GET 200 / responds with an array of comments with default sort order (by created_at and desc)', () => {
       return request(app)
         .get('/api/articles/1/comments')
         .expect(200)
@@ -152,13 +215,32 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           expect(body.comments).to.be.descendingBy('created_at');
         });
     });
-    it('/api/articles/:article_id/comments GET responds with an array of comments with default sort order (created_at, descending)', () => {
+    it('/api/articles/:article_id/comments?sortBy=author GET 200 / responds with an array of commetns sorted by author desc rather than default (created_at, desc)', () => {
       return request(app)
-        .get('/api/articles/1/comments')
+        .get('/api/articles/1/comments?sortBy=author')
         .expect(200)
         .then(({ body }) => {
-          expect(body.comments).to.be.descendingBy('created_at');
+          expect(body.comments).to.be.descendingBy('author', {
+            descending: true
+          });
         });
+    });
+    it('/api/articles/:article_id/comments?sortBy=author GET 200 / responds with an array of commetns sorted by votes rather than by default order and it is sorted ascending', () => {
+      return request(app)
+        .get('/api/articles/1/comments?sortBy=author')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comments).to.be.descendingBy('author', {
+            descending: false
+          });
+        });
+    });
+  });
+  describe('/api/comments/', () => {
+    it('/api/comments/:comment_id DELETE / 204 deletes a specific comment by ID ', () => {
+      return request(app)
+        .delete('/api/comments/1')
+        .expect(204);
     });
   });
 });
