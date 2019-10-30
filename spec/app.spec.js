@@ -32,8 +32,58 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
       });
     return Promise.all([invalidPathOne, invalidPathTwo]);
   });
+  describe('INVALID METHODS', () => {
+    it('/api/users / returns status:405 when an invalid route has been used', () => {
+      const invalidMethods = ['put', 'delete'];
+      const methodPromises = invalidMethods.map(method => {
+        return request(app)
+          [method]('/api/users')
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal('method not allowed');
+          });
+      });
+      return Promise.all(methodPromises);
+    });
+    it('/api/topics / returns  status:405 when an invalid route has been used', () => {
+      const invalidMethods = ['put', 'delete'];
+      const methodPromises = invalidMethods.map(method => {
+        return request(app)
+          [method]('/api/topics')
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal('method not allowed');
+          });
+      });
+      return Promise.all(methodPromises);
+    });
+    it('/api/articles/ returns  status:405 when an invalid route has been used', () => {
+      const invalidMethods = ['delete', 'put'];
+      const methodPromises = invalidMethods.map(method => {
+        return request(app)
+          [method]('/api/articles')
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal('method not allowed');
+          });
+      });
+      return Promise.all(methodPromises);
+    });
+    it('/api/comments/ returns  status:405 when an invalid route has been used', () => {
+      const invalidMethods = ['put'];
+      const methodPromises = invalidMethods.map(method => {
+        return request(app)
+          [method]('/api/comments')
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal('method not allowed');
+          });
+      });
+      return Promise.all(methodPromises);
+    });
+  });
   describe('/api/topics', () => {
-    it('/api/topics GET 200/ returns the list of topics object with all the relevant keys', () => {
+    it('GET 200/ returns the list of topics object with all the relevant keys', () => {
       return request(app)
         .get('/api/topics')
         .expect(200)
@@ -42,10 +92,10 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           expect(body.topics[0]).to.contain.keys('slug', 'description');
         });
     });
-    it('/api/topics GET 400 error', () => {});
+    it('GET 400 error', () => {});
   });
   describe('/api/users', () => {
-    it('/api/users/:user GET404 / returns "username not found" when passed a username which does not exist', () => {
+    it('GET404 / returns "username not found" when passed a username which does not exist', () => {
       return request(app)
         .get('/api/users/megatron')
         .expect(404)
@@ -53,7 +103,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           expect(body.msg).to.equal('username not found');
         });
     });
-    it('/api/users/:user GET200 / return a single user with all its keys to the client', () => {
+    it('GET200 / return a single user with all its keys to the client', () => {
       return request(app)
         .get('/api/users/butter_bridge')
         .expect(200)
@@ -68,7 +118,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
     });
   });
   describe('/api/articles', () => {
-    it(`returns 400: "bad request" when the client uses incorrect syntax`, () => {
+    it(`GET 400: "bad request" when the client uses incorrect syntax`, () => {
       return request(app)
         .get('/api/articles/harrythehatche-t')
         .expect(400)
@@ -76,7 +126,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           expect(body.msg).to.equal('22P02 database error');
         });
     });
-    it('returns 404 when trying to fetch an article that does not exist', () => {
+    it('GET 404 / when trying to fetch an article that does not exist', () => {
       return request(app)
         .get('/api/articles/157232')
         .expect(404)
@@ -86,7 +136,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           );
         });
     });
-    it('/api/articles GET 200 / returns an array of all the articles available in the database', () => {
+    it('GET 200 / returns an array of all the articles available in the database', () => {
       return request(app)
         .get('/api/articles')
         .expect(200)
@@ -102,7 +152,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           );
         });
     });
-    it('/api/articles?order=desc GET 200 / returns an array of all the articles in default order (descending)', () => {
+    it('GET 200 / returns an array of all the articles in default order (descending)', () => {
       return request(app)
         .get('/api/articles?order=desc')
         .expect(200)
@@ -112,17 +162,16 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           });
         });
     });
-    it('/api/articles?author=butter_bridge GET 200 / responds with all the articles for the user specified by the client', () => {
+    it('GET 200 / responds with all the articles for the user specified by the client', () => {
       return request(app)
         .get('/api/articles?author=butter_bridge')
         .expect(200)
         .then(({ body }) => {
-          // console.log(body);
           expect(body.articles[0].author).to.equal('butter_bridge');
           expect(body.articles[1].author).to.equal('butter_bridge');
         });
     });
-    it('/api/articles?author=benjoBanjo GET 404 / returns an error if there are not specified articles by the specific author', () => {
+    it('GET 404 / returns an error if there are not specified articles by the specific author', () => {
       return request(app)
         .get('/api/articles?author=benjoBanjo')
         .expect(404)
@@ -130,7 +179,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           expect(body.msg).to.equal('No articles by: benjoBanjo');
         });
     });
-    it('/api/articles?author=benjoBanjo GET 404 / returns an error if there are no topic in database specified by the client query', () => {
+    it('GET 404 / returns an error if there are no topic in database specified by the client query', () => {
       return request(app)
         .get('/api/articles?topic=donotvaccinateyourkids')
         .expect(404)
@@ -140,7 +189,9 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           );
         });
     });
-    it('/api/articles/:article_id GET 200 / returns an article specifed by the client with all the relevant keys', () => {
+  });
+  describe('/api/articles/:article_id', () => {
+    it('GET 200 / returns an article specifed by the client with all the relevant keys', () => {
       return request(app)
         .get('/api/articles/1')
         .expect(200)
@@ -156,7 +207,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           );
         });
     });
-    it('/api/articles/:article_id PATCH 201 / adds an "inc_votes:newVote" property to relevant article id', () => {
+    it('PATCH 201 / adds an "inc_votes:newVote" property to relevant article id', () => {
       return request(app)
         .patch('/api/articles/1')
         .send({ inc_votes: 7 })
@@ -165,9 +216,42 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           expect(body.article[0].votes).to.equal(107);
         });
     });
+    it(`GET 400 / when the body does not contain inc_votes property on the body `, () => {
+      return request(app)
+        .patch('/api/articles/1')
+        .send({ ines: 100 })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal(
+            'The request does not contain property: inc_votes in its body'
+          );
+        });
+    });
+    it(`GET 400 / when the body contins more properties on the body than just inc_votes `, () => {
+      return request(app)
+        .patch('/api/articles/1')
+        .send({ inc_votes: 100, yo: 200 })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal(
+            'The request body must have exactly one property: inc_votes. Check your request body'
+          );
+        });
+    });
+    it(`GET 400 / when the inc_values property on the body is not an integer `, () => {
+      return request(app)
+        .patch('/api/articles/1')
+        .send({ inc_votes: 'I am a string' })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal(
+            'inc_votes is not a number. Check the body of your request'
+          );
+        });
+    });
   });
   describe('/api/articles/:article_id/comments', () => {
-    it('/articles/:article_id/comments POST 201 / adds a comment property to the relevant article_id', () => {
+    it('POST 201 / adds a comment property to the relevant article_id', () => {
       return request(app)
         .post('/api/articles/1/comments')
         .send({ username: 'butter_bridge', body: 'butterlicious' })
@@ -183,7 +267,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           );
         });
     });
-    it('/api/articles/:article_id/comments POST 400 when the client sends an empty object as a comment', () => {
+    it('POST 400 when the client sends an empty object as a comment', () => {
       return request(app)
         .post('/api/articles/1/comments')
         .send({})
@@ -192,7 +276,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           expect(body.msg).to.equal('23502 database error');
         });
     });
-    it('/api/articles/:article_id/comments GET 200 / responds with an array of comments for the given article_id of which each comment has the following properties', () => {
+    it('GET 200 / responds with an array of comments for the given article_id of which each comment has the following properties', () => {
       return request(app)
         .get('/api/articles/1/comments')
         .expect(200)
@@ -207,7 +291,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           );
         });
     });
-    it('/api/articles/:article_id/comments GET 200 / responds with an array of comments with default sort order (by created_at and desc)', () => {
+    it('GET 200 / responds with an array of comments with default sort order (by created_at and desc)', () => {
       return request(app)
         .get('/api/articles/1/comments')
         .expect(200)
@@ -215,7 +299,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           expect(body.comments).to.be.descendingBy('created_at');
         });
     });
-    it('/api/articles/:article_id/comments?sortBy=author GET 200 / responds with an array of commetns sorted by author desc rather than default (created_at, desc)', () => {
+    it('GET 200 / responds with an array of comments sorted by author desc rather than default (created_at, desc)', () => {
       return request(app)
         .get('/api/articles/1/comments?sortBy=author')
         .expect(200)
@@ -225,7 +309,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           });
         });
     });
-    it('/api/articles/:article_id/comments?sortBy=author GET 200 / responds with an array of commetns sorted by votes rather than by default order and it is sorted ascending', () => {
+    it('GET 200 / responds with an array of comments sorted by votes rather than by default order and it is sorted ascending', () => {
       return request(app)
         .get('/api/articles/1/comments?sortBy=author')
         .expect(200)
@@ -236,8 +320,59 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
         });
     });
   });
-  describe('/api/comments/', () => {
-    it('/api/comments/:comment_id DELETE / 204 deletes a specific comment by ID ', () => {
+  describe('/api/comments/:comment_id', () => {
+    it('PATCH 201 / updates an "inc_votes:newVote" property to relevant comment id', () => {
+      return request(app)
+        .patch('/api/comments/1')
+        .send({ inc_votes: 100 })
+        .expect(201)
+        .then(({ body }) => {
+          expect(body.comment[0].votes).to.equal(116);
+        });
+    });
+    it('GET 404 / returns an error message if the comment is not in the database ', () => {
+      return request(app)
+        .patch('/api/comments/113256')
+        .send({ inc_votes: 100 })
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('comment: 113256 does not exist');
+        });
+    });
+    it(`GET 400 / when the body does not contain inc_votes property on the body `, () => {
+      return request(app)
+        .patch('/api/comments/1')
+        .send({ ines: 100 })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal(
+            'The request does not contain property: inc_votes in its body'
+          );
+        });
+    });
+    it(`GET 400 / when the body contins more properties on the body than just inc_votes `, () => {
+      return request(app)
+        .patch('/api/comments/1')
+        .send({ inc_votes: 100, yo: 200 })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal(
+            'The request body must have exactly one property: inc_votes. Check your request body'
+          );
+        });
+    });
+    it(`GET 400 / when the inc_values property on the body is not an integer `, () => {
+      return request(app)
+        .patch('/api/comments/1')
+        .send({ inc_votes: 'I am a string' })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal(
+            'inc_votes is not a number. Check the body of your request'
+          );
+        });
+    });
+    it('DELETE / 204 deletes a specific comment by ID ', () => {
       return request(app)
         .delete('/api/comments/1')
         .expect(204);
