@@ -72,6 +72,12 @@ exports.selectCommentsByArticle = (
   sortBy = 'created_at',
   order = 'desc'
 ) => {
+  if (order != 'desc' && order != 'asc') {
+    return Promise.reject({
+      msg: "Order must must be either 'asc' or 'desc'.",
+      status: 400
+    });
+  }
   return connection
     .select('*')
     .from('comments')

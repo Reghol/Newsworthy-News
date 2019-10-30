@@ -329,6 +329,16 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           });
         });
     });
+    it('GET 400 / when the order is neither ascending or descending', () => {
+      return request(app)
+        .get('/api/articles/1/comments?order=booyah')
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal(
+            "Order must must be either 'asc' or 'desc'."
+          );
+        });
+    });
   });
   describe('/api/comments/:comment_id', () => {
     it('PATCH 201 / updates an "inc_votes:newVote" property to relevant comment id', () => {
