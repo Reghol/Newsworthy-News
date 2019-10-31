@@ -17,7 +17,7 @@ exports.updateCommentVotesById = (req, res, next) => {
   const body = req.body;
   changeCommentVotesById(comment_id, body)
     .then(updatedComment => {
-      res.status(201).send({ comment: updatedComment });
+      res.status(200).send({ comment: updatedComment[0] });
     })
     .catch(next);
 };

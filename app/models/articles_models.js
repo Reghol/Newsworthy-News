@@ -20,14 +20,11 @@ exports.selectArticleById = article => {
 
 exports.updateArticleById = (article_id, body) => {
   const keys = Object.keys(body);
-  if (!keys.includes('inc_votes')) {
-    return Promise.reject({
-      msg: 'The request does not contain property: inc_votes in its body',
-      status: 400
-    });
-  }
 
-  if (keys.length != 1) {
+  if (
+    (keys.length > 0 && !body.inc_votes) ||
+    (body.inc_votes && keys.length > 1)
+  ) {
     return Promise.reject({
       msg:
         'The request body must have exactly one property: inc_votes. Check your request body',
@@ -35,7 +32,7 @@ exports.updateArticleById = (article_id, body) => {
     });
   }
 
-  if (typeof body.inc_votes !== 'number') {
+  if (body.inc_votes && typeof body.inc_votes !== 'number') {
     return Promise.reject({
       msg: 'inc_votes is not a number. Check the body of your request',
       status: 400
@@ -49,11 +46,33 @@ exports.updateArticleById = (article_id, body) => {
     .increment('votes', body.inc_votes || 0)
     .returning('*')
     .then(changedVoteCount => {
+      if (!changedVoteCount.length) {
+        return Promise.reject({
+          msg: `Article ${article_id} not found`,
+          status: 404
+        });
+      }
       return changedVoteCount;
     });
 };
 
 exports.insertCommentIntoArticle = (article_id, body) => {
+  const keys = Object.keys(body);
+  if (!keys.includes('username' && 'body')) {
+    return Promise.reject({
+      msg:
+        'The request does not include all the required keys: username and body',
+      status: 400
+    });
+  }
+  if (keys.length != 2) {
+    return Promise.reject({
+      msg:
+        'The request body must have exactly two properties: username and body. Check your request body',
+      status: 400
+    });
+  }
+
   let insertComment = {
     article_id: article_id,
     body: body.body,
@@ -64,13 +83,19 @@ exports.insertCommentIntoArticle = (article_id, body) => {
     .into('comments')
     .returning('*')
     .then(insertedComment => {
+      if (!insertedComment) {
+        return Promise.reject({
+          msg: `Not found. ${article_id} is not found, hence no comments for such article exist`,
+          status: 404
+        });
+      }
       return insertedComment;
     });
 };
 
 exports.selectCommentsByArticle = (
   article_id,
-  sortBy = 'created_at',
+  sort_by = 'created_at',
   order = 'desc'
 ) => {
   if (order != 'desc' && order != 'asc') {
@@ -83,8 +108,14 @@ exports.selectCommentsByArticle = (
     .select('*')
     .from('comments')
     .where({ article_id: article_id })
-    .orderBy(sortBy, order)
+    .orderBy(sort_by, order)
     .then(comments => {
+      if (!comments.length && article_id) {
+        return Promise.reject({
+          msg: `Not found. ${article_id} is not found, hence no comments for such article exist`,
+          status: 404
+        });
+      }
       return comments;
     });
 };

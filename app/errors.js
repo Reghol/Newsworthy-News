@@ -6,10 +6,14 @@ exports.customErrors = (err, req, res, next) => {
 
 exports.psqlErrors = (err, req, res, next) => {
   // console.log(err);
+  if (err.code === '23503') {
+    res.status(404).send({ msg: `${err.code} ${err.detail}` });
+  }
+
   const psqlErrors = ['22P02', '42P01', '23502'];
 
   if (psqlErrors.includes(err.code)) {
-    // console.log(err)
+    // console.log(err);
     res.status(400).send({ msg: `${err.code} database error` });
   } else next(err);
 };

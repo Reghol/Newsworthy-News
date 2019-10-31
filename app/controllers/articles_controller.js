@@ -30,16 +30,16 @@ exports.postCommentForArticle = (req, res, next) => {
   const body = req.body;
   insertCommentIntoArticle(article_id, body)
     .then(comment => {
-      res.status(201).send({ comment });
+      res.status(201).send({ comment: comment[0] });
     })
     .catch(next);
 };
 
 exports.getCommentsByArticle = (req, res, next) => {
   const { article_id } = req.params;
-  const { sortBy } = req.query;
+  const { sort_by } = req.query;
   const { order } = req.query;
-  selectCommentsByArticle(article_id, sortBy, order)
+  selectCommentsByArticle(article_id, sort_by, order)
     .then(comments => {
       res.status(200).send({ comments });
     })

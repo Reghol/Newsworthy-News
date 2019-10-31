@@ -32,7 +32,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
       });
     return Promise.all([invalidPathOne, invalidPathTwo]);
   });
-  describe.only('INVALID METHODS', () => {
+  describe('INVALID METHODS', () => {
     it('/api/users / returns status:405 when an invalid method has been used', () => {
       const invalidMethods = ['put', 'delete'];
       const methodPromises = invalidMethods.map(method => {
@@ -258,7 +258,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
         });
     });
   });
-  describe.only('/api/articles/:article_id', () => {
+  describe('/api/articles/:article_id', () => {
     it('GET 200 / returns an article specifed by the client with all the relevant keys', () => {
       return request(app)
         .get('/api/articles/1')
@@ -302,35 +302,45 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           expect(body.article.votes).to.equal(108);
         });
     });
-    xit('PATCH 200 / ignores a patch request with no information in the request body and sends an unchanged article to the client instead', () => {
+    it('PATCH 404 / adds an "inc_votes:newVote" property to relevant article id', () => {
+      return request(app)
+        .patch('/api/articles/123435235')
+        .send({ inc_votes: 8 })
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('Article 123435235 not found');
+        });
+    });
+    it('PATCH 200 / ignores a patch request with no information in the request body and sends an unchanged article to the client instead', () => {
       return request(app)
         .patch('/api/articles/1')
         .send({})
-        .expect(400)
+        .expect(200)
         .then(({ body }) => {
-          console.log(body);
-          expect(body.article).to.contain.keys(
+          expect(body.article).to.have.all.keys(
+            'article_id',
             'title',
+            'body',
+            'votes',
             'topic',
             'author',
-            'body',
-            'created_at',
-            'votes'
+            'created_at'
           );
         });
     });
-    it(`GET 400 / when the body does not contain inc_votes property on the body `, () => {
+    it(`GET 400 / when the body contains incorrect key in the body `, () => {
       return request(app)
         .patch('/api/articles/1')
         .send({ ines: 100 })
         .expect(400)
         .then(({ body }) => {
+          // console.log(body);
           expect(body.msg).to.equal(
-            'The request does not contain property: inc_votes in its body'
+            'The request body must have exactly one property: inc_votes. Check your request body'
           );
         });
     });
-    it(`GET 400 / when the body contins more properties on the body than just inc_votes `, () => {
+    it(`GET 400 / when the body contains more properties on the body than just inc_votes `, () => {
       return request(app)
         .patch('/api/articles/1')
         .send({ inc_votes: 100, yo: 200 })
@@ -360,7 +370,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
         .send({ username: 'butter_bridge', body: 'butterlicious' })
         .expect(201)
         .then(({ body }) => {
-          expect(body.comment[0]).to.have.keys(
+          expect(body.comment).to.have.keys(
             'comment_id',
             'author',
             'article_id',
@@ -376,9 +386,51 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
         .send({})
         .expect(400)
         .then(({ body }) => {
-          expect(body.msg).to.equal('23502 database error');
+          expect(body.msg).to.equal(
+            'The request does not include all the required keys: username and body'
+          );
         });
     });
+    it('POST 400 when the client sends the request object with more ore less keys than specified (2)', () => {
+      return request(app)
+        .post('/api/articles/1/comments')
+        .send({
+          username: 'butter_bridge',
+          body: 'butterlicious',
+          height: '162cm'
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal(
+            'The request body must have exactly two properties: username and body. Check your request body'
+          );
+        });
+    });
+    it('GET 404 when client asks for a comment for an article that does not exist', () => {
+      return request(app)
+        .get('/api/articles/10000/comments')
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.equal(
+            'Not found. 10000 is not found, hence no comments for such article exist'
+          );
+        });
+    });
+    it('GET 404 when client asks for a comment for an article that does not exist', () => {
+      return request(app)
+        .post('/api/articles/10000/comments')
+        .send({
+          username: 'butter_bridge',
+          body: 'butterlicious'
+        })
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.equal(
+            '23503 Key (article_id)=(10000) is not present in table "articles".'
+          );
+        });
+    });
+
     it('GET 200 / responds with an array of comments for the given article_id of which each comment has the following properties', () => {
       return request(app)
         .get('/api/articles/1/comments')
@@ -404,7 +456,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
     });
     it('GET 200 / responds with an array of comments sorted by author desc rather than default (created_at, desc)', () => {
       return request(app)
-        .get('/api/articles/1/comments?sortBy=author')
+        .get('/api/articles/1/comments?sort_by=author')
         .expect(200)
         .then(({ body }) => {
           expect(body.comments).to.be.descendingBy('author', {
@@ -414,10 +466,10 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
     });
     it('GET 200 / responds with an array of comments sorted by votes rather than by default order and it is sorted ascending', () => {
       return request(app)
-        .get('/api/articles/1/comments?sortBy=author')
+        .get('/api/articles/1/comments?sort_by=votes')
         .expect(200)
         .then(({ body }) => {
-          expect(body.comments).to.be.descendingBy('author', {
+          expect(body.comments).to.be.descendingBy('votes', {
             descending: false
           });
         });
@@ -434,13 +486,55 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
     });
   });
   describe('/api/comments/:comment_id', () => {
-    it('PATCH 201 / updates an "inc_votes:newVote" property to relevant comment id', () => {
+    it('PATCH 200 / updates an "inc_votes:newVote" property to relevant comment id', () => {
       return request(app)
         .patch('/api/comments/1')
         .send({ inc_votes: 100 })
-        .expect(201)
+        .expect(200)
         .then(({ body }) => {
-          expect(body.comment[0].votes).to.equal(116);
+          expect(body.comment.votes).to.equal(116);
+        });
+    });
+    it('PATCH 200 / updates an "inc_votes:newVote" property to relevant comment id if the number is a negative', () => {
+      return request(app)
+        .patch('/api/comments/1')
+        .send({ inc_votes: -22 })
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comment.votes).to.equal(-6);
+        });
+    });
+    it('PATCH 200 / returns all the relevant keys to the client', () => {
+      return request(app)
+        .patch('/api/comments/1')
+        .send({ inc_votes: 1110 })
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comment).to.have.keys(
+            'comment_id',
+            'author',
+            'article_id',
+            'votes',
+            'created_at',
+            'body'
+          );
+        });
+    });
+    it.only('GET400 / ignores a patch request with no information in the request body if empty object is being passed and sends an unchanged article to the client instead', () => {
+      return request(app)
+        .patch('/api/comments/1')
+        .send({})
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.article).to.have.all.keys(
+            'article_id',
+            'title',
+            'body',
+            'votes',
+            'topic',
+            'author',
+            'created_at'
+          );
         });
     });
     it('GET 400 / returns an error message an invalid comment_id path has been provided', () => {

@@ -27,9 +27,10 @@ exports.changeCommentVotesById = (comment_id, body) => {
     .select('*')
     .from('comments')
     .where({ 'comments.comment_id': comment_id })
-    .increment('votes', body.inc_votes)
+    .increment('votes', body.inc_votes || 0)
     .returning('*')
     .then(changedComment => {
+      console.log(changedComment);
       if (!changedComment.length) {
         return Promise.reject({
           status: 404,
