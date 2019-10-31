@@ -520,20 +520,19 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           );
         });
     });
-    it.only('GET400 / ignores a patch request with no information in the request body if empty object is being passed and sends an unchanged article to the client instead', () => {
+    it('GET200 / ignores a patch request with no information in the request body if empty object is being passed and sends an unchanged article to the client instead', () => {
       return request(app)
         .patch('/api/comments/1')
         .send({})
         .expect(200)
         .then(({ body }) => {
-          expect(body.article).to.have.all.keys(
-            'article_id',
-            'title',
-            'body',
-            'votes',
-            'topic',
+          expect(body.comment).to.have.all.keys(
+            'comment_id',
             'author',
-            'created_at'
+            'article_id',
+            'votes',
+            'created_at',
+            'body'
           );
         });
     });
@@ -562,7 +561,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
         .expect(400)
         .then(({ body }) => {
           expect(body.msg).to.equal(
-            'The request does not contain property: inc_votes in its body'
+            'The request body must have exactly one property: inc_votes. Check your request body'
           );
         });
     });
