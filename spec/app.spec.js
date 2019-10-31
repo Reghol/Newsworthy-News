@@ -150,7 +150,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           expect(body.msg).to.equal('username not found');
         });
     });
-    it.only('GET200 / return a single user with all its keys to the client', () => {
+    it('GET200 / return a single user with all its keys to the client', () => {
       return request(app)
         .get('/api/users/butter_bridge')
         .expect(200)
@@ -520,7 +520,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           );
         });
     });
-    it('GET400 / ignores a patch request with no information in the request body if empty object is being passed and sends an unchanged article to the client instead', () => {
+    it.only('GET400 / ignores a patch request with no information in the request body if empty object is being passed and sends an unchanged article to the client instead', () => {
       return request(app)
         .patch('/api/comments/1')
         .send({})
@@ -588,27 +588,27 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           );
         });
     });
-  });
-  it('GET/ 204 deletes a specific comment by ID ', () => {
-    return request(app)
-      .delete('/api/comments/1')
-      .expect(204);
-  });
-  it('GET 400 when and invalid comment id is being deleted it responds with error', () => {
-    return request(app)
-      .delete('/api/comments/sdf')
-      .expect(400)
-      .then(({ body }) => {
-        expect(body.msg).to.equal('22P02 database error');
-      });
-  });
-  xit('GET 400 when and non existent comment id is being deleted it responds with error', () => {
-    return request(app)
-      .delete('/api/comments/7890324')
-      .expect(400)
-      .then(({ body }) => {
-        expect(body.msg).to.equal('22P02 database error');
-      });
+    it('GET/ 204 deletes a specific comment by ID ', () => {
+      return request(app)
+        .delete('/api/comments/1')
+        .expect(204);
+    });
+    it('GET 400 when and invalid comment id is being deleted it responds with error', () => {
+      return request(app)
+        .delete('/api/comments/sdf')
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('22P02 database error');
+        });
+    });
+    it('GET 404 when and non existent comment id is being deleted it responds with error', () => {
+      return request(app)
+        .delete('/api/comments/7890324')
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('comment: 7890324 does not exist');
+        });
+    });
   });
 
   describe('FETCH JSON', () => {

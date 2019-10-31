@@ -30,7 +30,7 @@ exports.changeCommentVotesById = (comment_id, body) => {
     .increment('votes', body.inc_votes || 0)
     .returning('*')
     .then(changedComment => {
-      console.log(changedComment);
+      // console.log(changedComment);
       if (!changedComment.length) {
         return Promise.reject({
           status: 404,
@@ -45,5 +45,13 @@ exports.eraseCommentById = id => {
   return connection('comments')
     .where({ comment_id: id })
     .del()
-    .returning('*');
+    .returning('*')
+    .then(erased => {
+      if (!erased.length) {
+        return Promise.reject({
+          status: 404,
+          msg: `comment: ${id} does not exist`
+        });
+      }
+    });
 };
