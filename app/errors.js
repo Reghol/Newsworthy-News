@@ -1,5 +1,5 @@
 exports.customErrors = (err, req, res, next) => {
-  // console.log(err.status);
+  // console.log(err);
   if (err.status) res.status(err.status).send({ msg: err.msg });
   else next(err);
 };
@@ -9,6 +9,7 @@ exports.psqlErrors = (err, req, res, next) => {
   const psqlErrors = ['22P02', '42P01', '23502'];
 
   if (psqlErrors.includes(err.code)) {
+    // console.log(err)
     res.status(400).send({ msg: `${err.code} database error` });
   } else next(err);
 };

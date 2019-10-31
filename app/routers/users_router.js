@@ -4,7 +4,10 @@ const usersRouter = require('express').Router();
 
 usersRouter.route('/').all(send405error);
 
-usersRouter.route('/:username').get(getUser);
+usersRouter
+  .route('/:username')
+  .get(getUser)
+  .all(send405error);
 
 //get post allowed
 //delete & put not allowed

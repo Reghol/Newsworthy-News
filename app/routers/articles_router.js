@@ -12,13 +12,14 @@ const { send405error } = require('../errors');
 articlesRouter
   .route('/:article_id')
   .get(getArticleById)
-  .patch(patchArticleById);
+  .patch(patchArticleById)
+  .all(send405error);
 
 articlesRouter
   .route('/:article_id/comments')
   .post(postCommentForArticle)
-  .get(getCommentsByArticle);
-
+  .get(getCommentsByArticle)
+  .all(send405error);
 articlesRouter
   .route('/')
   .get(getAllArticles)

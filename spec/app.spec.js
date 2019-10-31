@@ -32,8 +32,8 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
       });
     return Promise.all([invalidPathOne, invalidPathTwo]);
   });
-  describe('INVALID METHODS', () => {
-    it('/api/users / returns status:405 when an invalid route has been used', () => {
+  describe.only('INVALID METHODS', () => {
+    it('/api/users / returns status:405 when an invalid method has been used', () => {
       const invalidMethods = ['put', 'delete'];
       const methodPromises = invalidMethods.map(method => {
         return request(app)
@@ -45,7 +45,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
       });
       return Promise.all(methodPromises);
     });
-    it('/api/topics / returns  status:405 when an invalid route has been used', () => {
+    it('/api/topics / returns  status:405 when an invalid method has been used', () => {
       const invalidMethods = ['put', 'delete'];
       const methodPromises = invalidMethods.map(method => {
         return request(app)
@@ -57,7 +57,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
       });
       return Promise.all(methodPromises);
     });
-    it('/api/articles/ returns  status:405 when an invalid route has been used', () => {
+    it('/api/articles/ returns  status:405 when an invalid method has been used', () => {
       const invalidMethods = ['delete', 'put'];
       const methodPromises = invalidMethods.map(method => {
         return request(app)
@@ -69,11 +69,59 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
       });
       return Promise.all(methodPromises);
     });
-    it('/api/comments/ returns  status:405 when an invalid route has been used', () => {
+    it('/api/articles/:article:id returns  status:405 when an invalid method has been used', () => {
+      const invalidMethods = ['delete', 'put'];
+      const methodPromises = invalidMethods.map(method => {
+        return request(app)
+          [method]('/api/articles/1')
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal('method not allowed');
+          });
+      });
+      return Promise.all(methodPromises);
+    });
+    it('/api/articles/:article:id/comments returns  status:405 when an invalid method has been used', () => {
+      const invalidMethods = ['put'];
+      const methodPromises = invalidMethods.map(method => {
+        return request(app)
+          [method]('/api/articles/1/comments')
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal('method not allowed');
+          });
+      });
+      return Promise.all(methodPromises);
+    });
+    it('/api/comments/ returns  status:405 when an invalid method has been used', () => {
       const invalidMethods = ['put'];
       const methodPromises = invalidMethods.map(method => {
         return request(app)
           [method]('/api/comments')
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal('method not allowed');
+          });
+      });
+      return Promise.all(methodPromises);
+    });
+    it('/api/comments/1000 returns  status:405 when an invalid method has been used', () => {
+      const invalidMethods = ['put'];
+      const methodPromises = invalidMethods.map(method => {
+        return request(app)
+          [method]('/api/comments/1000')
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal('method not allowed');
+          });
+      });
+      return Promise.all(methodPromises);
+    });
+    it('/api/users/butter_bridge returns  status:405 when an invalid method has been used', () => {
+      const invalidMethods = ['put'];
+      const methodPromises = invalidMethods.map(method => {
+        return request(app)
+          [method]('/api/users/butter_bridge')
           .expect(405)
           .then(({ body: { msg } }) => {
             expect(msg).to.equal('method not allowed');
@@ -173,11 +221,21 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
     });
     it('GET 200 / responds with all the articles for the user specified by the client', () => {
       return request(app)
-        .get('/api/articles?author=butter_bridge')
+        .get('/api/articles?author=rogersop')
         .expect(200)
         .then(({ body }) => {
-          expect(body.articles[0].author).to.equal('butter_bridge');
-          expect(body.articles[1].author).to.equal('butter_bridge');
+          expect(body.articles[0].author).to.equal('rogersop');
+          expect(body.articles[1].author).to.equal('rogersop');
+        });
+    });
+    it('GET 200 / returns an array of all the articles sorted by author', () => {
+      return request(app)
+        .get('/api/articles?sort_by=author')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles).to.be.sortedBy('author', {
+            descending: true
+          });
         });
     });
     it('GET 404 / returns an error if there are not specified articles by the specific author', () => {
@@ -200,14 +258,15 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
         });
     });
   });
-  describe('/api/articles/:article_id', () => {
+  describe.only('/api/articles/:article_id', () => {
     it('GET 200 / returns an article specifed by the client with all the relevant keys', () => {
       return request(app)
         .get('/api/articles/1')
         .expect(200)
         .then(({ body }) => {
-          expect(body.article.length).to.equal(1);
-          expect(body.article[0]).to.contain.keys(
+          expect(body.article.article_id).to.equal(1);
+          expect(body.article.comment_count).to.equal('13');
+          expect(body.article).to.contain.keys(
             'title',
             'topic',
             'author',
@@ -217,13 +276,47 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           );
         });
     });
-    it('PATCH 201 / adds an "inc_votes:newVote" property to relevant article id', () => {
+    it('GET 200 / returns an article specified by the client for articles which have no comments. In that case the comment count is set to 0 in the database.', () => {
+      return request(app)
+        .get('/api/articles/2')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.article.article_id).to.equal(2);
+          expect(body.article.votes).to.equal(0);
+          expect(body.article).to.contain.keys(
+            'title',
+            'topic',
+            'author',
+            'body',
+            'created_at',
+            'votes'
+          );
+        });
+    });
+    it('PATCH 200 / adds an "inc_votes:newVote" property to relevant article id', () => {
       return request(app)
         .patch('/api/articles/1')
-        .send({ inc_votes: 7 })
-        .expect(201)
+        .send({ inc_votes: 8 })
+        .expect(200)
         .then(({ body }) => {
-          expect(body.article[0].votes).to.equal(107);
+          expect(body.article.votes).to.equal(108);
+        });
+    });
+    xit('PATCH 200 / ignores a patch request with no information in the request body and sends an unchanged article to the client instead', () => {
+      return request(app)
+        .patch('/api/articles/1')
+        .send({})
+        .expect(400)
+        .then(({ body }) => {
+          console.log(body);
+          expect(body.article).to.contain.keys(
+            'title',
+            'topic',
+            'author',
+            'body',
+            'created_at',
+            'votes'
+          );
         });
     });
     it(`GET 400 / when the body does not contain inc_votes property on the body `, () => {
@@ -350,6 +443,15 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           expect(body.comment[0].votes).to.equal(116);
         });
     });
+    it('GET 400 / returns an error message an invalid comment_id path has been provided', () => {
+      return request(app)
+        .patch('/api/comments/not-a-numbser')
+        .send({ inc_votes: 100 })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('22P02 database error');
+        });
+    });
     it('GET 404 / returns an error message if the comment is not in the database ', () => {
       return request(app)
         .patch('/api/comments/113256')
@@ -392,12 +494,29 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           );
         });
     });
-    it('DELETE / 204 deletes a specific comment by ID ', () => {
-      return request(app)
-        .delete('/api/comments/1')
-        .expect(204);
-    });
   });
+  it('GET/ 204 deletes a specific comment by ID ', () => {
+    return request(app)
+      .delete('/api/comments/1')
+      .expect(204);
+  });
+  it('GET 400 when and invalid comment id is being deleted it responds with error', () => {
+    return request(app)
+      .delete('/api/comments/sdf')
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).to.equal('22P02 database error');
+      });
+  });
+  xit('GET 400 when and non existent comment id is being deleted it responds with error', () => {
+    return request(app)
+      .delete('/api/comments/7890324')
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).to.equal('22P02 database error');
+      });
+  });
+
   describe('FETCH JSON', () => {
     it('GET 200 /  responds with JSON describing all the available endpoints on your API', () => {
       return request(app)

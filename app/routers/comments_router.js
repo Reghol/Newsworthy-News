@@ -8,7 +8,8 @@ const {
 commentsRouter
   .route('/:comment_id')
   .patch(updateCommentVotesById)
-  .delete(deleteCommentById);
+  .delete(deleteCommentById)
+  .all(send405error);
 
 commentsRouter.route('/').all(send405error);
 module.exports = commentsRouter;

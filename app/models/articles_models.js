@@ -41,11 +41,12 @@ exports.updateArticleById = (article_id, body) => {
       status: 400
     });
   }
+
   return connection
     .select('*')
     .from('articles')
     .where({ 'articles.article_id': article_id })
-    .increment('votes', body.inc_votes)
+    .increment('votes', body.inc_votes || 0)
     .returning('*')
     .then(changedVoteCount => {
       return changedVoteCount;
@@ -89,7 +90,7 @@ exports.selectCommentsByArticle = (
 };
 
 exports.selectAllArticles = query => {
-  const sort = query.sortBy || 'created_at';
+  const sort = query.sort_by || 'created_at';
   const order = query.order || 'desc';
   if (order != 'desc' && order != 'asc') {
     return Promise.reject({
