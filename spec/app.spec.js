@@ -150,12 +150,12 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           expect(body.msg).to.equal('username not found');
         });
     });
-    it('GET200 / return a single user with all its keys to the client', () => {
+    it.only('GET200 / return a single user with all its keys to the client', () => {
       return request(app)
         .get('/api/users/butter_bridge')
         .expect(200)
         .then(({ body }) => {
-          expect(body.user[0]).to.eql({
+          expect(body.user).to.eql({
             username: 'butter_bridge',
             name: 'jonny',
             avatar_url:
@@ -520,7 +520,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           );
         });
     });
-    it.only('GET400 / ignores a patch request with no information in the request body if empty object is being passed and sends an unchanged article to the client instead', () => {
+    it('GET400 / ignores a patch request with no information in the request body if empty object is being passed and sends an unchanged article to the client instead', () => {
       return request(app)
         .patch('/api/comments/1')
         .send({})
