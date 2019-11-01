@@ -1,6 +1,7 @@
 const connection = require('../../connection');
 
 exports.changeCommentVotesById = (comment_id, body) => {
+  // console.log(body);
   const keys = Object.keys(body);
   // if (!keys.includes('inc_votes')) {
   //   return Promise.reject({

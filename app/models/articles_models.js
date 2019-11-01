@@ -96,7 +96,9 @@ exports.insertCommentIntoArticle = (article_id, body) => {
 exports.selectCommentsByArticle = (
   article_id,
   sort_by = 'created_at',
-  order = 'desc'
+  order = 'desc',
+  limit = 10,
+  p = 1
 ) => {
   if (order != 'desc' && order != 'asc') {
     return Promise.reject({
@@ -109,6 +111,8 @@ exports.selectCommentsByArticle = (
     .from('comments')
     .where({ article_id: article_id })
     .orderBy(sort_by, order)
+    .limit(limit)
+    .offset((p - 1) * limit)
     .then(comments => {
       if (!comments.length && article_id) {
         return Promise.reject({
@@ -123,6 +127,8 @@ exports.selectCommentsByArticle = (
 exports.selectAllArticles = query => {
   const sort = query.sort_by || 'created_at';
   const order = query.order || 'desc';
+  const limit = query.limit || 10;
+  const paginator = query.p || 1;
   if (order != 'desc' && order != 'asc') {
     return Promise.reject({
       msg: "Order must must be either 'asc' or 'desc'.",
@@ -137,6 +143,8 @@ exports.selectAllArticles = query => {
       if (query.topic) extraQueries.where('articles.topic', query.topic);
     })
     .orderBy(sort, order)
+    .limit(limit)
+    .offset((paginator - 1) * limit)
     .count({ comment_count: 'comment_id' })
     .leftJoin('comments', 'articles.article_id', 'comments.article_id')
     .groupBy('articles.article_id')

@@ -247,14 +247,45 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
         });
     });
 
-    it('GET 404 / returns an error if there are no topic in database specified by the client query', () => {
+    it('GET 400 / returns an error if the user is trying to sort by a non-existent column', () => {
       return request(app)
-        .get('/api/articles?topic=donotvaccinateyourkids')
-        .expect(404)
+        .get('/api/articles?sort_by=not-a-column')
+        .expect(400)
         .then(({ body }) => {
-          expect(body.msg).to.equal(
-            'No articles for topic: donotvaccinateyourkids'
-          );
+          expect(body.msg).to.equal('42703 database error');
+        });
+    });
+
+    it('GET 200 / returns all the articles but limits the number of articles displayed on the page to by default', () => {
+      return request(app)
+        .get('/api/articles')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles).to.have.lengthOf(10);
+        });
+    });
+    it('GET 200 / returns all the articles but limits the number of articles by the number specified by the client', () => {
+      return request(app)
+        .get('/api/articles?limit=7')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles).to.have.lengthOf(7);
+        });
+    });
+    it('GET 200 / returns all the articles on a specific page(pagination)', () => {
+      return request(app)
+        .get('/api/articles?p=1')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles).to.have.lengthOf(10);
+        });
+    });
+    it('GET 200 / returns all the articles with a client specified limit and pagination', () => {
+      return request(app)
+        .get('/api/articles?p=2&limit=7')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles).to.have.lengthOf(5);
         });
     });
   });
@@ -334,7 +365,6 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
         .send({ ines: 100 })
         .expect(400)
         .then(({ body }) => {
-          // console.log(body);
           expect(body.msg).to.equal(
             'The request body must have exactly one property: inc_votes. Check your request body'
           );
@@ -391,7 +421,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           );
         });
     });
-    it('POST 400 when the client sends the request object with more ore less keys than specified (2)', () => {
+    it('POST 400 when the client sends the request object with more or fewer keys than specified (2)', () => {
       return request(app)
         .post('/api/articles/1/comments')
         .send({
@@ -404,6 +434,14 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           expect(body.msg).to.equal(
             'The request body must have exactly two properties: username and body. Check your request body'
           );
+        });
+    });
+    it('GET 400 / returns an error if the client is trying to sort the comments by an invalid column', () => {
+      return request(app)
+        .get('/api/articles/1/comments?sort_by=not-a-column')
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('42703 database error');
         });
     });
     it('GET 404 when client asks for a comment for an article that does not exist', () => {
@@ -434,6 +472,21 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
     it('GET 200 / responds with an array of comments for the given article_id of which each comment has the following properties', () => {
       return request(app)
         .get('/api/articles/1/comments')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comments[0]).to.have.keys(
+            'comment_id',
+            'author',
+            'article_id',
+            'votes',
+            'created_at',
+            'body'
+          );
+        });
+    });
+    it.only('GET 200 / responds with an array of comments for the given article_id of which each comment has the following properties', () => {
+      return request(app)
+        .get('/api/articles/2/comments')
         .expect(200)
         .then(({ body }) => {
           expect(body.comments[0]).to.have.keys(
@@ -482,6 +535,38 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           expect(body.msg).to.equal(
             "Order must must be either 'asc' or 'desc'."
           );
+        });
+    });
+    it('GET 200 / returns all the articles comments but limits the number of articles displayed on the page to by default', () => {
+      return request(app)
+        .get('/api/articles/1/comments')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comments).to.have.lengthOf(10);
+        });
+    });
+    it('GET 200 / returns all the articles comments but limits the number of articles by the number specified by the client', () => {
+      return request(app)
+        .get('/api/articles/1/comments?limit=6')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comments).to.have.lengthOf(6);
+        });
+    });
+    it('GET 200 / returns all the articles comments on a specific page(pagination)', () => {
+      return request(app)
+        .get('/api/articles/1/comments?limit=3&p=2')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comments).to.have.lengthOf(3);
+        });
+    });
+    it('GET 200 / returns all the articles comments with a client specified limit and pagination', () => {
+      return request(app)
+        .get('/api/articles/1/comments?limit=5&p=1')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comments).to.have.lengthOf(5);
         });
     });
   });
