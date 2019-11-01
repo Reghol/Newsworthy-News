@@ -444,14 +444,12 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           expect(body.msg).to.equal('42703 database error');
         });
     });
-    it('GET 404 when client asks for a comment for an article that does not exist', () => {
+    it('GET 200 when client asks for a comment for an article that does not exist', () => {
       return request(app)
         .get('/api/articles/10000/comments')
-        .expect(404)
+        .expect(200)
         .then(({ body }) => {
-          expect(body.msg).to.equal(
-            'Not found. 10000 is not found, hence no comments for such article exist'
-          );
+          expect(body.comments).to.eql([]);
         });
     });
     it('GET 404 when client asks for a comment for an article that does not exist', () => {
@@ -484,19 +482,12 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           );
         });
     });
-    it.only('GET 200 / responds with an array of comments for the given article_id of which each comment has the following properties', () => {
+    it('GET 200 / responds with an empty array if there are no comments for the aricle, but the article itself exists', () => {
       return request(app)
         .get('/api/articles/2/comments')
         .expect(200)
         .then(({ body }) => {
-          expect(body.comments[0]).to.have.keys(
-            'comment_id',
-            'author',
-            'article_id',
-            'votes',
-            'created_at',
-            'body'
-          );
+          expect(body.comments).to.be.an('array');
         });
     });
     it('GET 200 / responds with an array of comments with default sort order (by created_at and desc)', () => {

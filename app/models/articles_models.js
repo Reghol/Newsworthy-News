@@ -114,12 +114,6 @@ exports.selectCommentsByArticle = (
     .limit(limit)
     .offset((p - 1) * limit)
     .then(comments => {
-      if (!comments.length && article_id) {
-        return Promise.reject({
-          msg: `Not found. ${article_id} is not found, hence no comments for such article exist`,
-          status: 404
-        });
-      }
       return comments;
     });
 };

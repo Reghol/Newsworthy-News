@@ -2,13 +2,11 @@ exports.messageSplitter = err => {
   return err.message.split(' - ');
 };
 exports.customErrors = (err, req, res, next) => {
-  // console.log(err);
   if (err.status) res.status(err.status).send({ msg: err.msg });
   else next(err);
 };
 
 exports.psqlErrors = (err, req, res, next) => {
-  // messageSplitter(err);
   if (err.code === '23503') {
     res.status(404).send({ msg: `${err.code} ${err.detail}` });
   }
@@ -21,11 +19,9 @@ exports.psqlErrors = (err, req, res, next) => {
 };
 
 exports.serverErrors = (err, req, res, next) => {
-  // console.log(err);
   res.status(500).send('server error');
 };
 
 exports.send405error = (req, res, next) => {
-  // console.log(req);
   res.status(405).send({ msg: 'method not allowed' });
 };
