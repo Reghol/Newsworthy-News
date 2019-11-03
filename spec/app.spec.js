@@ -141,7 +141,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
         });
     });
   });
-  describe('/api/users', () => {
+  describe.only('/api/users', () => {
     it('GET404 / returns "username not found" when passed a username which does not exist', () => {
       return request(app)
         .get('/api/users/megatron')
@@ -163,7 +163,31 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           });
         });
     });
+    it('GET 200 / returns all the users to the client as an array', () => {
+      return request(app)
+        .get('/api/users')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.users).to.have.lengthOf(4);
+          expect(body.users).to.be.an('array');
+        });
+    });
+    it('PATCH 200 / ignores a patch request with no information in the request body and sends an unchanged article to the client instead', () => {
+      return request(app)
+        .post('/api/users')
+        .send({
+          username: 'bridge_boy',
+          name: 'Kaladin',
+          avatar_url:
+            'https://pm1.narvii.com/6885/27b71ce5e6e7ec3ddbc8b5617735ac2603b17984r1-612-868v2_hq.jpg'
+        })
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.user).to.have.all.keys('username', 'name', 'avatar_url');
+        });
+    });
   });
+
   describe('/api/articles', () => {
     it(`GET 400  / "bad request" when the client uses incorrect syntax`, () => {
       return request(app)
@@ -392,7 +416,66 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
           );
         });
     });
+    it('POST 200 / posts an article to the database with a new id number for the article', () => {
+      return request(app)
+        .post('/api/articles')
+        .send({
+          author: 'rogersop',
+          title: 'Reddit is in the past baby',
+          body: `indeed`,
+          topic: 'mitch'
+        })
+        .expect(200)
+        .then(({ body }) => {
+          const { article_id } = body.article;
+          expect(article_id).to.equal(13);
+        });
+    });
+    it('GET 400 / returns and an error message when given invalid article object keys', () => {
+      return request(app)
+        .post('/api/articles')
+        .send({
+          wrong_key: 'wrong_value'
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('42703 database error');
+        });
+    });
+    it('GET 400 / returns an error message when given a valid article object with correct keys, but with incorrect values', () => {
+      return request(app)
+        .post('/api/articles')
+        .send({
+          author: 1,
+          title: 2,
+          body: 4,
+          topic: 5
+        })
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.equal(
+            '23503 Key (topic)=(5) is not present in table "topics".'
+          );
+        });
+    });
+    it('GET 404 / returns an error message when given a non-existent authors or topics', () => {
+      return request(app)
+        .post('/api/articles')
+        .send({
+          author: 'invalid_author',
+          title: 'title',
+          body: 'Blah, blah, blah',
+          topic: 'incorrec_topic'
+        })
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.equal(
+            '23503 Key (topic)=(incorrec_topic) is not present in table "topics".'
+          );
+        });
+    });
   });
+
   describe('/api/articles/:article_id/comments', () => {
     it('POST 201 / adds a comment property to the relevant article_id', () => {
       return request(app)
@@ -685,7 +768,6 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
         });
     });
   });
-
   describe('FETCH JSON', () => {
     it('GET 200 /  responds with JSON describing all the available endpoints on your API', () => {
       return request(app)

@@ -3,7 +3,8 @@ const {
   updateArticleById,
   insertCommentIntoArticle,
   selectCommentsByArticle,
-  selectAllArticles
+  selectAllArticles,
+  insertNewArticle
 } = require('../models/articles_models');
 
 exports.getArticleById = (req, res, next) => {
@@ -50,6 +51,15 @@ exports.getAllArticles = (req, res, next) => {
   selectAllArticles(query)
     .then(articles => {
       res.status(200).send({ articles });
+    })
+    .catch(next);
+};
+
+exports.postArticle = (req, res, next) => {
+  const body = req.body;
+  insertNewArticle(body)
+    .then(article => {
+      res.status(200).send({ article: article[0] });
     })
     .catch(next);
 };

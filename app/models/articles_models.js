@@ -158,3 +158,13 @@ exports.selectAllArticles = query => {
       return result;
     });
 };
+
+exports.insertNewArticle = body => {
+  return connection
+    .insert(body)
+    .into('articles')
+    .returning('*')
+    .then(insertedArticle => {
+      return insertedArticle;
+    });
+};

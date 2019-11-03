@@ -13,3 +13,15 @@ exports.checkIfArticleExists = article_id => {
       return true;
     });
 };
+const checkIfAuthorExists = author => {
+  return connection
+    .select('*')
+    .from('users')
+    .where({ username: author })
+    .then(authors => {
+      if (!authors.length) {
+        return Promise.reject({ status: 404, msg: 'Author not found' });
+      }
+      return true;
+    });
+};
