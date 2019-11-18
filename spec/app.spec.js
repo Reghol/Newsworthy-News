@@ -141,7 +141,7 @@ describe('APP TESTING - ENDPOINTS AND ERROR HANDLING', () => {
         });
     });
   });
-  describe.only('/api/users', () => {
+  describe('/api/users', () => {
     it('GET404 / returns "username not found" when passed a username which does not exist', () => {
       return request(app)
         .get('/api/users/megatron')
