@@ -55,6 +55,7 @@ Installation (same for Mac and Linux users apart from point 5)
 
 6. Create your knexfile (the database has been built using knex query builder). Put this file in the root directory of the app and paste the below code into it:
 
+```
    const { DB_URL } = process.env;
    const ENV = process.env.NODE_ENV || 'development';
 
@@ -93,6 +94,7 @@ Installation (same for Mac and Linux users apart from point 5)
    };
 
    module.exports = { ...customConfig[ENV], ...baseConfig };
+```
 
 7. Testing. There are 2 test files. One for the utility functions, another one for the app itself. The tests itself have been written using Mocha testing framework and Chai assertion library.
 
