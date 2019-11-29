@@ -22,6 +22,7 @@ Installation (same for Mac and Linux users apart from point 5)
 
    Create your knexfile (the database has been built using knex query builder). Put this file in the root directory of the app and paste the below code into it:
 
+```
    const { DB_URL } = process.env;
    const ENV = process.env.NODE_ENV || 'development';
 
@@ -52,6 +53,7 @@ Installation (same for Mac and Linux users apart from point 5)
    };
 
    module.exports = { ...customConfig[ENV], ...baseConfig };
+```
 
 6. Create your knexfile (the database has been built using knex query builder). Put this file in the root directory of the app and paste the below code into it:
 
