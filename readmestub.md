@@ -2,6 +2,10 @@ Newsworthy News
 
 This repository is for an API I built, that hosts a small database of news articles. It also store info for the database users can leave comments for any articles.
 
+Requirements
+Node: version 10 and ,higher
+Postgres: version 10.10
+
 Installation (same for Mac and Linux users apart from point 5)
 
 1. Clone the repo to a directory of your choosing using:
@@ -105,8 +109,6 @@ module.exports = { ...customConfig[ENV], ...baseConfig };
 
 7. Testing. There are 2 test files. One for the utility functions, another one for the app itself. The tests itself have been written using Mocha testing framework and Chai assertion library.
 
+```
    npm test
-
-Requirements
-Node: version 10 and ,higher
-Postgres: version 10.10
+```
