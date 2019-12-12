@@ -47,15 +47,15 @@ const customConfig = {
   development: {
     connection: {
       database: 'nc_news',
-      user: 'sonofhonor',
-      password: 'psqlsr3ql'
+      user: 'yourusername',
+      password: 'yourpasswordhere'
     }
   },
   test: {
     connection: {
       database: 'nc_news_test',
-      user: 'sonofhonor',
-      password: 'psqlsr3ql'
+      user: 'yourusername',
+      password: 'yourpasswordhere'
     }
   },
   production: {
@@ -88,15 +88,15 @@ const customConfig = {
   development: {
     connection: {
       database: 'nc_news',
-      user: 'sonofhonor',
-      password: 'psqlsr3ql'
+      user: 'yourusername',
+      password: 'yourpasswordhere'
     }
   },
   test: {
     connection: {
       database: 'nc_news_test',
-      user: 'sonofhonor',
-      password: 'psqlsr3ql'
+      user: 'yourusername',
+      password: 'yourpasswordhere'
     }
   },
   production: {
