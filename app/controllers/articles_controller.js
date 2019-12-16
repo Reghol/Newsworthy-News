@@ -4,8 +4,10 @@ const {
   insertCommentIntoArticle,
   selectCommentsByArticle,
   selectAllArticles,
-  insertNewArticle
-} = require('../models/articles_models');
+  insertNewArticle,
+  totalCount,
+  checkIfExists
+} = require("../models/articles_models");
 
 exports.getArticleById = (req, res, next) => {
   const { article_id } = req.params;
@@ -48,10 +50,28 @@ exports.getCommentsByArticle = (req, res, next) => {
 
 exports.getAllArticles = (req, res, next) => {
   const query = req.query;
-  selectAllArticles(query)
-    .then(articles => {
-      res.status(200).send({ articles });
-    })
+  const { author, topic } = query;
+  const articles = selectAllArticles(query);
+  const checkIfAuthorExists = author
+    ? checkIfExists(author, "users", "username")
+    : null;
+  const checkIfTopicExists = topic
+    ? checkIfExists(topic, "topics", "slug")
+    : null;
+  const total_count = totalCount("articles", author, topic);
+
+  Promise.all([checkIfAuthorExists, checkIfTopicExists, articles, total_count])
+    .then(
+      ([checkIfAuthorExists, checkIfTopicExists, articles, total_count]) => {
+        if (checkIfAuthorExists === false) {
+          return Promise.reject({ status: 404, message: "Author not found" });
+        } else if (checkIfTopicExists === false) {
+          return Promise.reject({ status: 404, message: "Topic not found" });
+        } else {
+          res.status(200).send({ total_count, articles });
+        }
+      }
+    )
     .catch(next);
 };
 

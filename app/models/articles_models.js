@@ -1,13 +1,13 @@
-const connection = require('../../connection');
+const connection = require("../../connection");
 
 exports.selectArticleById = article => {
   return connection
-    .select('articles.*')
-    .from('articles')
-    .where({ 'articles.article_id': article })
-    .leftJoin('comments', 'articles.article_id', 'comments.article_id')
-    .groupBy('articles.article_id')
-    .count({ comment_count: 'comment_id' })
+    .select("articles.*")
+    .from("articles")
+    .where({ "articles.article_id": article })
+    .leftJoin("comments", "articles.article_id", "comments.article_id")
+    .groupBy("articles.article_id")
+    .count({ comment_count: "comment_id" })
     .then(selectedArticle => {
       if (!selectedArticle.length)
         return Promise.reject({
@@ -27,24 +27,24 @@ exports.updateArticleById = (article_id, body) => {
   ) {
     return Promise.reject({
       msg:
-        'The request body must have exactly one property: inc_votes. Check your request body',
+        "The request body must have exactly one property: inc_votes. Check your request body",
       status: 400
     });
   }
 
-  if (body.inc_votes && typeof body.inc_votes !== 'number') {
+  if (body.inc_votes && typeof body.inc_votes !== "number") {
     return Promise.reject({
-      msg: 'inc_votes is not a number. Check the body of your request',
+      msg: "inc_votes is not a number. Check the body of your request",
       status: 400
     });
   }
 
   return connection
-    .select('*')
-    .from('articles')
-    .where({ 'articles.article_id': article_id })
-    .increment('votes', body.inc_votes || 0)
-    .returning('*')
+    .select("*")
+    .from("articles")
+    .where({ "articles.article_id": article_id })
+    .increment("votes", body.inc_votes || 0)
+    .returning("*")
     .then(changedVoteCount => {
       if (!changedVoteCount.length) {
         return Promise.reject({
@@ -58,17 +58,17 @@ exports.updateArticleById = (article_id, body) => {
 
 exports.insertCommentIntoArticle = (article_id, body) => {
   const keys = Object.keys(body);
-  if (!keys.includes('username' && 'body')) {
+  if (!keys.includes("username" && "body")) {
     return Promise.reject({
       msg:
-        'The request does not include all the required keys: username and body',
+        "The request does not include all the required keys: username and body",
       status: 400
     });
   }
   if (keys.length != 2) {
     return Promise.reject({
       msg:
-        'The request body must have exactly two properties: username and body. Check your request body',
+        "The request body must have exactly two properties: username and body. Check your request body",
       status: 400
     });
   }
@@ -80,8 +80,8 @@ exports.insertCommentIntoArticle = (article_id, body) => {
   };
   return connection
     .insert(insertComment)
-    .into('comments')
-    .returning('*')
+    .into("comments")
+    .returning("*")
     .then(insertedComment => {
       if (!insertedComment) {
         return Promise.reject({
@@ -95,20 +95,20 @@ exports.insertCommentIntoArticle = (article_id, body) => {
 
 exports.selectCommentsByArticle = (
   article_id,
-  sort_by = 'created_at',
-  order = 'desc',
+  sort_by = "created_at",
+  order = "desc",
   limit = 10,
   p = 1
 ) => {
-  if (order != 'desc' && order != 'asc') {
+  if (order != "desc" && order != "asc") {
     return Promise.reject({
       msg: "Order must must be either 'asc' or 'desc'.",
       status: 400
     });
   }
   return connection
-    .select('*')
-    .from('comments')
+    .select("*")
+    .from("comments")
     .where({ article_id: article_id })
     .orderBy(sort_by, order)
     .limit(limit)
@@ -119,29 +119,29 @@ exports.selectCommentsByArticle = (
 };
 
 exports.selectAllArticles = query => {
-  const sort = query.sort_by || 'created_at';
-  const order = query.order || 'desc';
+  const sort = query.sort_by || "created_at";
+  const order = query.order || "desc";
   const limit = query.limit || 10;
   const paginator = query.p || 1;
-  if (order != 'desc' && order != 'asc') {
+  if (order != "desc" && order != "asc") {
     return Promise.reject({
       msg: "Order must must be either 'asc' or 'desc'.",
       status: 400
     });
   }
   return connection
-    .select('articles.*')
-    .from('articles')
+    .select("articles.*")
+    .from("articles")
     .modify(extraQueries => {
-      if (query.author) extraQueries.where('articles.author', query.author);
-      if (query.topic) extraQueries.where('articles.topic', query.topic);
+      if (query.author) extraQueries.where("articles.author", query.author);
+      if (query.topic) extraQueries.where("articles.topic", query.topic);
     })
     .orderBy(sort, order)
     .limit(limit)
     .offset((paginator - 1) * limit)
-    .count({ comment_count: 'comment_id' })
-    .leftJoin('comments', 'articles.article_id', 'comments.article_id')
-    .groupBy('articles.article_id')
+    .count({ comment_count: "comment_id" })
+    .leftJoin("comments", "articles.article_id", "comments.article_id")
+    .groupBy("articles.article_id")
     .then(result => {
       if (!result.length && query.author) {
         return Promise.reject({
@@ -159,11 +159,36 @@ exports.selectAllArticles = query => {
     });
 };
 
+exports.totalCount = (table, author, topic) => {
+  return connection
+    .select("*")
+    .from(table)
+    .modify(extraQueries => {
+      if (author) extraQueries.where("articles.author", author);
+      if (topic) extraQueries.where("articles.topic", topic);
+    })
+    .then(articles => {
+      if (articles.length === 0) return 0;
+      else return articles.length;
+    });
+};
+
+exports.checkIfExists = (query, table, column) => {
+  return connection
+    .select("*")
+    .from(table)
+    .where(column, query)
+    .then(result => {
+      if (result.length === 0) return false;
+      else return true;
+    });
+};
+
 exports.insertNewArticle = body => {
   return connection
     .insert(body)
-    .into('articles')
-    .returning('*')
+    .into("articles")
+    .returning("*")
     .then(insertedArticle => {
       return insertedArticle;
     });

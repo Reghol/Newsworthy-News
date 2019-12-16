@@ -10,7 +10,7 @@
     }
   },
   "GET /api/articles": {
-    "description": "serves an array of all topics",
+    "description": "serves an array of all topics, also gives you the total count of all the articles in the database",
     "queries": ["author", "topic", "sort_by", "order"],
     "exampleResponse": {
       "articles": [
